@@ -52,10 +52,10 @@ class Truck extends Vehicle implements AbleToTow{
   tow(vehicle: Truck | Motorbike | Car): void {
     // TODO: Get the make an model of the vehicle if it exists\
     const vehicleDetails = `${this.make} ${this.model}`;
-    if (vehicle !== this.tow) {
+    if (vehicle !== this) {
 
     // TODO: Check if the vehicle's weight is less than or equal to the truck's towing capacity
-    if (this.weight <= this.towingCapacity) {
+    if (vehicle.weight <= this.towingCapacity) {
       console.log(`towing ${vehicleDetails}`)
     } else{
       console.log(`too heavy to tow ${vehicleDetails}`)
@@ -64,22 +64,22 @@ class Truck extends Vehicle implements AbleToTow{
     // TODO: If it is not, log that the vehicle is too heavy to be towed
   }
 
-  override printDetails(): void {
-    // Call the parent class's printDetails method
-    super()
-  
-    // Log the Truck details
-    console.log(`Truck Details: 
-      VIN: ${this.vin}
-      Make: ${this.make}
-      Model: ${this.model}
-      Year: ${this.year}
-      Weight: ${this.weight}
-      Top Speed: ${this.topSpeed}
-      Color: ${this.color}
-      Towing Capacity: ${this.towingCapacity}
-      Wheels: ${this.wheels.length}`),
-  }
+}
+override printDetails(): void {
+  // Call the parent class's printDetails method
+  super.printDetails();
+
+  // Log the Truck details
+  console.log(`Truck Details: 
+    VIN: ${this.vin}
+    Make: ${this.make}
+    Model: ${this.model}
+    Year: ${this.year}
+    Weight: ${this.weight}
+    Top Speed: ${this.topSpeed}
+    Color: ${this.color}
+    Towing Capacity: ${this.towingCapacity}
+    Wheels: ${this.wheels.length}`)
 }
 }
 // Export the Truck class as the default export

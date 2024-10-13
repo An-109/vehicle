@@ -6,16 +6,20 @@ import Motorbike from "./Motorbike.js";
 import Wheel from "./Wheel.js";
 
 // define the Cli class
-class Cli extends Wheel{
+class Cli extends Wheel extends Truck extends Motorbike extends Car{
   // TODO: update the vehicles property to accept Truck and Motorbike objects as well
   // TODO: You will need to use the Union operator to define additional types for the array
   // TODO: See the AbleToTow interface for an example of how to use the Union operator
-  vehicles: (Car)[];
+  vehicles: (Car|Truck| Motorbike)[];
   selectedVehicleVin: string | undefined;
+  
   exit: boolean = false;
+  
+  
 
   // TODO: Update the constructor to accept Truck and Motorbike objects as well
-  constructor(vehicles: (Car)[]) {
+  constructor(vehicles: (Car|Truck| Motorbike)[]) {
+    super();
     this.vehicles = vehicles;
   }
 
@@ -48,7 +52,7 @@ class Cli extends Wheel{
         // set the selectedVehicleVin to the vin of the selected vehicle
         this.selectedVehicleVin = answers.selectedVehicleVin;
         // perform actions on the selected vehicle
-        this.performActions();
+        this.chooseVehicle();
       });
   }
 
@@ -133,7 +137,7 @@ class Cli extends Wheel{
         // set the selectedVehicleVin to the vin of the car
         this.selectedVehicleVin = car.vin;
         // perform actions on the car
-        this.performActions();
+        this.createCar();
       });
   }
 
@@ -163,6 +167,11 @@ class Cli extends Wheel{
         },
         {
           type: 'input',
+          name: 'wheel',
+          message: 'Enter wheel',
+        },
+        {
+          type: 'input',
           name: 'weight',
           message: 'Enter Weight',
         },
@@ -179,7 +188,7 @@ class Cli extends Wheel{
       ])
       .then((answers) => {
         // TODO: Use the answers object to pass the required properties to the Truck constructor
-        // TODO: push the truck to the vehicles array
+        
         // TODO: set the selectedVehicleVin to the vin of the truck
         // TODO: perform actions on the truck
         const truck = new Truck(
@@ -190,8 +199,9 @@ class Cli extends Wheel{
           answers.model,
           parseInt(answers.year),
           parseInt(answers.weight),
-          parseInt(answers.topSpeed),
           parseInt(answers.towingCapacity),
+          parseInt(answers.topSpeed),
+          
         []
         );
         // push the car to the vehicles array
@@ -199,9 +209,10 @@ class Cli extends Wheel{
         // set the selectedVehicleVin to the vin of the car
         this.selectedVehicleVin = truck.vin;
         // perform actions on the car
-        this.performActions();
+        this.createTruck();
       
       });
+    
   }
 
   // method to create a motorbike
@@ -260,7 +271,7 @@ class Cli extends Wheel{
         },
       ])
       .then((answers) => {
-        const motorbike = new Motorbike implements Cli(
+        const motorbike = new Motorbike(
           // TODO: The generateVin method is static and should be called using the class name Cli, make sure to use Cli.generateVin() for creating a truck and motorbike as well!
           Cli.generateVin(),
           answers.color,
@@ -278,13 +289,13 @@ class Cli extends Wheel{
         // TODO: set the selectedVehicleVin to the vin of the motorbike
         this.selectedVehicleVin = motorbike.vin;
         // TODO: perform actions on the motorbike
-        this.performActions();
+        this.createMotorbike();
       });
   }
 
   // method to find a vehicle to tow
   // TODO: add a parameter to accept a truck object
-  findVehicleToTow(): void {
+  findVehicleToTow(truck: Truck): void {
     inquirer
       .prompt([
         {
@@ -301,13 +312,25 @@ class Cli extends Wheel{
       ])
       .then((answers) => {
         // TODO: check if the selected vehicle is the truck
-        if (answers.vehicleToTow === ) {
+        const selectedVehicle = answers.vehicleToTow;
+
+        // TODO: check if the selected vehicle is the truck
+        if (selectedVehicle === Truck) {
+          // TODO: if it is, log that the truck cannot tow itself then perform actions on the truck to allow the user to select another action
+          console.log("The truck cannot tow itself. Please select another vehicle or action.");
           
-        }
+          this.findVehicleToTow(truck);
+        } else {
+          // TODO: if it is not, tow the selected vehicle then perform actions on the truck to allow the user to select another action
+          truck.tow(selectedVehicle);  // Assuming `tow` is a method in `Truck` class
+          console.log(`${truck.make} ${truck.model} is now towing ${selectedVehicle.make} ${selectedVehicle.model}`);
+          
+          this.findVehicleToTow(truck);
         // TODO: if it is, log that the truck cannot tow itself then perform actions on the truck to allow the user to select another action
         // TODO: if it is not, tow the selected vehicle then perform actions on the truck to allow the user to select another action
-      });
-  }
+      }
+    });
+}
 
   // method to perform actions on a vehicle
   performActions(): void {
@@ -335,94 +358,59 @@ class Cli extends Wheel{
         },
       ])
       .then((answers) => {
-        // perform the selected action
-        if (answers.action === 'Print details') {
-          // find the selected vehicle and print its details
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].printDetails();
-            }
-          }
-        } else if (answers.action === 'Start vehicle') {
-          // find the selected vehicle and start it
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].start();
-            }
-          }
-        } else if (answers.action === 'Accelerate 5 MPH') {
-          // find the selected vehicle and accelerate it by 5 MPH
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].accelerate(5);
-            }
-          }
-        } else if (answers.action === 'Decelerate 5 MPH') {
-          // find the selected vehicle and decelerate it by 5 MPH
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].decelerate(5);
-            }
-          }
-        } else if (answers.action === 'Stop vehicle') {
-          // find the selected vehicle and stop it
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].stop();
-            }
-          }
-        } else if (answers.action === 'Turn right') {
-          // find the selected vehicle and turn it right
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].turn('right');
-            }
-          }
-        } else if (answers.action === 'Turn left') {
-          // find the selected vehicle and turn it left
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].turn('left');
-            }
-          }
-        } else if (answers.action === 'Reverse') {
-          // find the selected vehicle and reverse it
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].reverse();
-            }
-          }
-        } else if (answers.action === 'tow') {
-          // find the selected vehicle and reverse it
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].reverse();
-            }
-          }
-        } else if (answers.action === 'wheelie') {
-          // find the selected vehicle and reverse it
-          for (let i = 0; i < this.vehicles.length; i++) {
-            if (this.vehicles[i].vin === this.selectedVehicleVin) {
-              this.vehicles[i].reverse();
-            }
-          }
-        }
-        // TODO: add statements to perform the tow action only if the selected vehicle is a truck. Call the findVehicleToTow method to find a vehicle to tow and pass the selected truck as an argument. After calling the findVehicleToTow method, you will need to return to avoid instantly calling the performActions method again since findVehicleToTow is asynchronous.
-        // TODO: add statements to perform the wheelie action only if the selected vehicle is a motorbike
-        else if (answers.action === 'Select or create another vehicle') {
-          // start the cli to return to the initial prompt if the user wants to select or create another vehicle
-          this.startCli();
-          return;
+        const selectedVehicle = this.vehicles.find(v => v.vin === this.selectedVehicleVin);
+
+      if (!selectedVehicle) return;
+
+      if (answers.action === 'Print details') {
+        selectedVehicle.printDetails();
+      } else if (answers.action === 'Start vehicle') {
+        selectedVehicle.start();
+      } else if (answers.action === 'Accelerate 5 MPH') {
+        selectedVehicle.accelerate(5);
+      } else if (answers.action === 'Decelerate 5 MPH') {
+        selectedVehicle.decelerate(5);
+      } else if (answers.action === 'Stop vehicle') {
+        selectedVehicle.stop();
+      } else if (answers.action === 'Turn right') {
+        selectedVehicle.turn('right');
+      } else if (answers.action === 'Turn left') {
+        selectedVehicle.turn('left');
+      } else if (answers.action === 'Reverse') {
+        selectedVehicle.reverse();
+      } 
+      
+      // Perform 'tow' action only if the selected vehicle is a truck
+      else if (answers.action === 'tow') {
+        if (selectedVehicle instanceof Truck) {
+          this.findVehicleToTow(selectedVehicle);  // Pass truck as argument
+          return;  // Avoid instantly calling performActions again
         } else {
-          // exit the cli if the user selects exit
-          this.exit = true;
+          console.log('Only trucks can tow!');
         }
-        if (!this.exit) {
-          // if the user does not want to exit, perform actions on the selected vehicle
-          this.performActions();
+      } 
+      
+      // Perform 'wheelie' action only if the selected vehicle is a motorbike
+      else if (answers.action === 'wheelie') {
+        if (selectedVehicle instanceof Motorbike) {
+          selectedVehicle.wheelie();
+        } else {
+          console.log('Only motorbikes can perform a wheelie!');
         }
-      });
-  }
+      } 
+      
+      else if (answers.action === 'Select or create another vehicle') {
+        this.startCli();
+        return;
+      } else {
+        this.exit = true;
+      }
+
+      if (!this.exit) {
+        this.performActions();
+      }
+    });
+}
 
   // method to start the cli
   startCli(): void {
