@@ -6,7 +6,7 @@ import Motorbike from "./Motorbike.js";
 import Wheel from "./Wheel.js";
 
 // define the Cli class
-class Cli extends Wheel extends Truck extends Motorbike extends Car{
+class Cli{
   // TODO: update the vehicles property to accept Truck and Motorbike objects as well
   // TODO: You will need to use the Union operator to define additional types for the array
   // TODO: See the AbleToTow interface for an example of how to use the Union operator
@@ -19,7 +19,7 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
 
   // TODO: Update the constructor to accept Truck and Motorbike objects as well
   constructor(vehicles: (Car|Truck| Motorbike)[]) {
-    super();
+  
     this.vehicles = vehicles;
   }
 
@@ -52,7 +52,7 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
         // set the selectedVehicleVin to the vin of the selected vehicle
         this.selectedVehicleVin = answers.selectedVehicleVin;
         // perform actions on the selected vehicle
-        this.chooseVehicle();
+        this.performActions();
       });
   }
 
@@ -137,7 +137,7 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
         // set the selectedVehicleVin to the vin of the car
         this.selectedVehicleVin = car.vin;
         // perform actions on the car
-        this.createCar();
+        this.startCli();
       });
   }
 
@@ -201,15 +201,15 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
           parseInt(answers.weight),
           parseInt(answers.towingCapacity),
           parseInt(answers.topSpeed),
-          
-        []
+          parseInt(answers.wheel)
+        
         );
         // push the car to the vehicles array
         this.vehicles.push(truck);
         // set the selectedVehicleVin to the vin of the car
         this.selectedVehicleVin = truck.vin;
-        // perform actions on the car
-        this.createTruck();
+        
+        this.startCli();
       
       });
     
@@ -289,7 +289,7 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
         // TODO: set the selectedVehicleVin to the vin of the motorbike
         this.selectedVehicleVin = motorbike.vin;
         // TODO: perform actions on the motorbike
-        this.createMotorbike();
+        this.startCli();
       });
   }
 
@@ -334,6 +334,7 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
 
   // method to perform actions on a vehicle
   performActions(): void {
+    const selectedVehicle = this.vehicles.find(v => v.vin === this.selectedVehicleVin);
     inquirer
       .prompt([
         {
@@ -358,12 +359,16 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
         },
       ])
       .then((answers) => {
-        const selectedVehicle = this.vehicles.find(v => v.vin === this.selectedVehicleVin);
-
-      if (!selectedVehicle) return;
+        
+        try {
+        
+          if (!selectedVehicle) return;
+       
+      
 
       if (answers.action === 'Print details') {
         selectedVehicle.printDetails();
+        
       } else if (answers.action === 'Start vehicle') {
         selectedVehicle.start();
       } else if (answers.action === 'Accelerate 5 MPH') {
@@ -378,38 +383,24 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
         selectedVehicle.turn('left');
       } else if (answers.action === 'Reverse') {
         selectedVehicle.reverse();
-      } 
-      
-      // Perform 'tow' action only if the selected vehicle is a truck
-      else if (answers.action === 'tow') {
-        if (selectedVehicle instanceof Truck) {
-          this.findVehicleToTow(selectedVehicle);  // Pass truck as argument
-          return;  // Avoid instantly calling performActions again
-        } else {
-          console.log('Only trucks can tow!');
-        }
-      } 
-      
-      // Perform 'wheelie' action only if the selected vehicle is a motorbike
-      else if (answers.action === 'wheelie') {
-        if (selectedVehicle instanceof Motorbike) {
-          selectedVehicle.wheelie();
-        } else {
-          console.log('Only motorbikes can perform a wheelie!');
-        }
-      } 
-      
-      else if (answers.action === 'Select or create another vehicle') {
-        this.startCli();
+      } else if (answers.action === 'Select or create another vehicle') {
+        this.createVehicle();
+      } else if (answers.action === 'Tow' && selectedVehicle instanceof Truck) {
+        this.findVehicleToTow(selectedVehicle);
+      } else if (answers.action === 'Wheelie' && selectedVehicle instanceof Motorbike) {
+        selectedVehicle.wheelie();
+      } else if (answers.action === 'Exit') {
         return;
-      } else {
-        this.exit = true;
       }
-
-      if (!this.exit) {
-        this.performActions();
-      }
+    this.performActions();
+      
+    } catch (error) {
+          console.error("error", error);
+    }
+ 
+    
     });
+    
 }
 
   // method to start the cli
@@ -421,16 +412,19 @@ class Cli extends Wheel extends Truck extends Motorbike extends Car{
           name: 'CreateOrSelect',
           message:
             'Would you like to create a new vehicle or perform an action on an existing vehicle?',
-          choices: ['Create a new vehicle', 'Select an existing vehicle'],
+          choices: ['Create a new vehicle', 'Select an existing vehicle', 'exit'],
         },
       ])
       .then((answers) => {
-        // check if the user wants to create a new vehicle or select an existing vehicle
         if (answers.CreateOrSelect === 'Create a new vehicle') {
           this.createVehicle();
-        } else {
+        } else if (answers.CreateOrSelect === 'Select an existing vehicle') {
           this.chooseVehicle();
+        } else if (answers.CreateOrSelect === 'Exit') {
+          this.exit = true;
         }
+
+        
       });
   }
 }
