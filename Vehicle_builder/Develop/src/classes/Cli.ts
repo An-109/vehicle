@@ -335,6 +335,7 @@ class Cli{
   // method to perform actions on a vehicle
   performActions(): void {
     const selectedVehicle = this.vehicles.find(v => v.vin === this.selectedVehicleVin);
+    if (!selectedVehicle) return; // Ensure a vehicle is selecteds
     inquirer
       .prompt([
         {
@@ -361,48 +362,65 @@ class Cli{
       .then((answers) => {
         
         try {
+          // Perform the action based on user input
+          switch (answers.action) {
+            case 'Print details':
+              selectedVehicle.printDetails();
+              break;
+            case 'Start vehicle':
+              selectedVehicle.start();
+              break;
+            case 'Accelerate 5 MPH':
+              selectedVehicle.accelerate(5);
+              break;
+            case 'Decelerate 5 MPH':
+              selectedVehicle.decelerate(5);
+              break;
+            case 'Stop vehicle':
+              selectedVehicle.stop();
+              break;
+            case 'Turn right':
+              selectedVehicle.turn('right');
+              break;
+            case 'Turn left':
+              selectedVehicle.turn('left');
+              break;
+            case 'Reverse':
+              selectedVehicle.reverse();
+              break;
+            case 'Select or create another vehicle':
+              this.createVehicle();
+              break;
+            case 'Tow':
+              if (selectedVehicle instanceof Truck) {
+                this.findVehicleToTow(selectedVehicle);
+              } else {
+                console.log("This vehicle cannot tow.");
+              }
+              break;
+            case 'Wheelie':
+              if (selectedVehicle instanceof Motorbike) {
+                selectedVehicle.wheelie();
+              } else {
+                console.log("This vehicle cannot perform a wheelie.");
+              }
+              break;
+            case 'Exit':
+              console.log("Exiting the action menu."); // Exit message
+              return; // Exit the method
+            default:
+              console.log("Invalid action selected.");
+          }
+  
+          // After performing the action, prompt the user again
+          
+        } catch (error) {
+          console.error("An error occurred:", error); // Log any errors
+        }
         
-          if (!selectedVehicle) return;
-       
+      })
       
-
-      if (answers.action === 'Print details') {
-        selectedVehicle.printDetails();
-        
-      } else if (answers.action === 'Start vehicle') {
-        selectedVehicle.start();
-      } else if (answers.action === 'Accelerate 5 MPH') {
-        selectedVehicle.accelerate(5);
-      } else if (answers.action === 'Decelerate 5 MPH') {
-        selectedVehicle.decelerate(5);
-      } else if (answers.action === 'Stop vehicle') {
-        selectedVehicle.stop();
-      } else if (answers.action === 'Turn right') {
-        selectedVehicle.turn('right');
-      } else if (answers.action === 'Turn left') {
-        selectedVehicle.turn('left');
-      } else if (answers.action === 'Reverse') {
-        selectedVehicle.reverse();
-      } else if (answers.action === 'Select or create another vehicle') {
-        this.createVehicle();
-      } else if (answers.action === 'Tow' && selectedVehicle instanceof Truck) {
-        this.findVehicleToTow(selectedVehicle);
-      } else if (answers.action === 'Wheelie' && selectedVehicle instanceof Motorbike) {
-        selectedVehicle.wheelie();
-      } else if (answers.action === 'Exit') {
-        return;
-      }
-    this.performActions();
-      
-    } catch (error) {
-          console.error("error", error);
-    }
- 
-    
-    });
-    
-}
-
+  }
   // method to start the cli
   startCli(): void {
     inquirer
